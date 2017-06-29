@@ -203,3 +203,6 @@ class BaseDataSource(AbstractDataSource):
 
     def get_ticks(self, order_book_id, date):
         raise NotImplementedError
+
+    def get_merge_ticks(self, order_book_id_list, trading_date, last_dt=None):
+        raise NotImplementedError
