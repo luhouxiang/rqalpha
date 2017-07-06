@@ -9,6 +9,7 @@
 import bcolz
 from collections import namedtuple
 import numpy as np
+import pandas as pd
 
 Rule = namedtuple('Rule', ['dtype', 'multiplier', 'round'])
 class Converter(object):
@@ -77,34 +78,45 @@ dtype = np.dtype([(f, _converter.field_type(f, _table.cols[f].dtype))
                   for f in table_fields])
 stock_list = []
 stock_type = np.dtype({'names':['name'], 'formats':['S32']}, align=True)
-num = 0
+count = 0
 print("一共有股票", len(_index_index_), "支股票需要保存成.csv文件")
 for code, value in _index_index_.items():
-    num += 1
-    if num >= 3:
-        break
-    stock_list.append(code)
+    stocks = []
+    stocks.append(code)
+    stock_list.append(stocks)
+    count += 1
     s, e = value
     date_list = _index_table.cols[index_fields[0]][s:e]
     start_list = _index_table.cols[index_fields[1]][s:e]
     end_list = _index_table.cols[index_fields[2]][s:e]
-    sum = None
-    for i in range(len(date_list)):
+    sum_result = None
+    date_list_len = len(date_list)
+    if date_list_len > 200:
+        print(code + ': ', "*" * int(date_list_len/200 + 1))
+    for i in range(date_list_len):
         s = start_list[i]
         e = end_list[i]
         result = np.empty(shape=(e - s,), dtype=dtype)
-
         for f in table_fields:
             result[f] = _converter.convert(f, _table.cols[f][s:e])
-        # np.savetxt(code + str(date_list[i]) + '.csv', result, delimiter=',')
         if i == 0:
-            sum = result
+            sum_result = result
         else:
-            sum = np.concatenate((sum, result))
-    # 保存每一支股票的分钟线到.csv中
-    np.savetxt(code + '.csv', sum, delimiter=',')
-    print("[" , num, "/", len(_index_index_), "]", "保存文件:", code + '.csv')
+            sum_result = np.concatenate((sum_result, result))
 
-stockarr = np.array(stock_list, dtype=np.str_)
-np.savetxt('index_index.csv', stockarr, delimiter=',', fmt="%s")
-print("保存索引文件index_index.csv成功，数据保存完成")
+        if i > 0 and (i % 200) == 0:
+            print(code + ': ', "." * int(i / 200 + 1))
+    # 保存每一支股票的分钟线到.csv中
+    dst_path = 'minute_' + code + '.csv'
+    # np.savetxt(dst_path, sum, delimiter=',')
+    df = pd.DataFrame(data=sum_result, columns=table_fields)
+    df.to_csv(dst_path)
+    print("[", count, "/", len(_index_index_), "]", "保存文件:", dst_path)
+    if count >= 3:
+        break
+
+dst_path = "minute_index.csv"
+df = pd.DataFrame(data=stock_list, columns=['code'])
+df.to_csv(dst_path)
+# np.savetxt(dst_path, stockarr, delimiter=',', fmt="%s")
+print("保存索引文件", dst_path, "成功，数据保存完成")
