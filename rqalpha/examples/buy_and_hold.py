@@ -1,5 +1,5 @@
 from rqalpha.api import *
-
+# from ..utils.logger import user_system_log
 
 # 在这个方法中编写任何的初始化逻辑。context对象将会在你的算法策略的任何方法之间做传递。
 def init(context):
@@ -22,7 +22,8 @@ def handle_bar(context, bar_dict):
     # context.portfolio 可以拿到现在的投资组合状态信息
 
     # 使用order_shares(id_or_ins, amount)方法进行落单
-
+    logger.info("[handle_bar]:" + context.s1 +  ", frequency:" + bar_dict._frequency + ", date: " + str(bar_dict.dt))
+    # logger.warn(("buy"))
     # TODO: 开始编写你的算法吧！
     if not context.fired:
         # order_percent并且传入1代表买入该股票并且使其占有投资组合的100%

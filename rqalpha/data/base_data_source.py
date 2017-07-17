@@ -50,7 +50,8 @@ class BaseDataSource(AbstractDataSource):
                 DayBarStore(_p('futures.bcolz'), FutureDayBarConverter),
                 DayBarStore(_p('funds.bcolz'), FundDayBarConverter),
             ]
-
+            self._minute_bars = None
+            '''
             self._minute_bars = [
                 MinuteBarStore('E:\\hq-data\\rqalpha-plus\\.rqalpha-plus\\bundle\\stocks_mb.bcolz',
                             'E:\\hq-data\\rqalpha-plus\\.rqalpha-plus\\bundle\\stocks_mb_index.bcolz',
@@ -59,7 +60,7 @@ class BaseDataSource(AbstractDataSource):
                             'E:\\hq-data\\rqalpha-plus\\.rqalpha-plus\\bundle\\indexes_mb_index.bcolz',
                             IndexBarConverter_mb),
             ]
-
+            '''
             self._instruments = InstrumentStore(_p('instruments.pk'))
             self._dividends = DividendStore(_p('original_dividends.bcolz'))
             self._trading_dates = TradingDatesStore(_p('trading_dates.bcolz'))
