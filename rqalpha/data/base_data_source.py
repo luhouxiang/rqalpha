@@ -21,14 +21,13 @@ import numpy as np
 from ..interface import AbstractDataSource
 from ..const import MARGIN_TYPE
 from ..utils.py2 import lru_cache
-from ..utils.datetime_func import convert_date_to_int, convert_int_to_date, convert_dt_to_int
+from ..utils.datetime_func import convert_date_to_int, convert_int_to_date
 from ..utils.i18n import gettext as _
 
 from .future_info_cn import CN_FUTURE_INFO
-from .converter import StockBarConverter, IndexBarConverter, StockBarConverter_mb, IndexBarConverter_mb
+from .converter import StockBarConverter, IndexBarConverter
 from .converter import FutureDayBarConverter, FundDayBarConverter
 from .daybar_store import DayBarStore
-from .minutebar_store import MinuteBarStore
 from .date_set import DateSet
 from .dividend_store import DividendStore
 from .instrument_store import InstrumentStore
@@ -50,17 +49,7 @@ class BaseDataSource(AbstractDataSource):
                 DayBarStore(_p('futures.bcolz'), FutureDayBarConverter),
                 DayBarStore(_p('funds.bcolz'), FundDayBarConverter),
             ]
-            self._minute_bars = None
-            '''
-            self._minute_bars = [
-                MinuteBarStore('E:\\hq-data\\rqalpha-plus\\.rqalpha-plus\\bundle\\stocks_mb.bcolz',
-                            'E:\\hq-data\\rqalpha-plus\\.rqalpha-plus\\bundle\\stocks_mb_index.bcolz',
-                            StockBarConverter_mb),
-                MinuteBarStore('E:\\hq-data\\rqalpha-plus\\.rqalpha-plus\\bundle\\indexes_mb.bcolz',
-                            'E:\\hq-data\\rqalpha-plus\\.rqalpha-plus\\bundle\\indexes_mb_index.bcolz',
-                            IndexBarConverter_mb),
-            ]
-            '''
+
             self._instruments = InstrumentStore(_p('instruments.pk'))
             self._dividends = DividendStore(_p('original_dividends.bcolz'))
             self._trading_dates = TradingDatesStore(_p('trading_dates.bcolz'))
@@ -80,7 +69,7 @@ class BaseDataSource(AbstractDataSource):
     def get_dividend(self, order_book_id):
         return self._dividends.get_dividend(order_book_id)
 
-    def get_trading_minutes_for(self, order_book_id, trading_dt):
+    def get_trading_minutes_for(self, instrument, trading_dt):
         raise NotImplementedError
 
     def get_trading_calendar(self):
@@ -115,10 +104,6 @@ class BaseDataSource(AbstractDataSource):
         return self._day_bars[i].get_bars(instrument.order_book_id, fields=None)
 
     @lru_cache(None)
-    def _all_minute_bars_of(self, instrument, dt):
-        i = self._index_of(instrument)
-        return self._minute_bars[i].get_bars(instrument.order_book_id, dt, fields=None)
-    @lru_cache(None)
     def _filtered_day_bars(self, instrument):
         bars = self._all_day_bars_of(instrument)
         if bars is None:
@@ -127,19 +112,12 @@ class BaseDataSource(AbstractDataSource):
 
     def get_bar(self, instrument, dt, frequency):
         if frequency != '1d':
-            if frequency == '1m':
-                bars = self._all_minute_bars_of(instrument, dt)
-            else:
-                raise NotImplementedError
-        else:
-            bars = self._all_day_bars_of(instrument)
+            raise NotImplementedError
+
+        bars = self._all_day_bars_of(instrument)
         if bars is None:
             return
-        if frequency == '1d':
-            dt = np.uint64(convert_date_to_int(dt))
-        elif frequency == '1m':
-            dt = np.uint64(convert_dt_to_int(dt))
-
+        dt = np.uint64(convert_date_to_int(dt))
         pos = bars['datetime'].searchsorted(dt)
         if pos >= len(bars) or bars['datetime'][pos] != dt:
             return None
@@ -207,7 +185,7 @@ class BaseDataSource(AbstractDataSource):
         return self._split_factor.get_factors(order_book_id)
 
     def available_data_range(self, frequency):
-        if frequency in ['tick', '1d', '1m']:
+        if frequency in ['tick', '1d']:
             s, e = self._day_bars[self.INSTRUMENT_TYPE_MAP['INDX']].get_date_range('000001.XSHG')
             return convert_int_to_date(s).date(), convert_int_to_date(e).date()
 
@@ -224,7 +202,4 @@ class BaseDataSource(AbstractDataSource):
         return CN_FUTURE_INFO[instrument.underlying_symbol]['speculation']
 
     def get_ticks(self, order_book_id, date):
-        raise NotImplementedError
-
-    def get_merge_ticks(self, order_book_id_list, trading_date, last_dt=None):
         raise NotImplementedError

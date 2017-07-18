@@ -19,6 +19,7 @@ from rqalpha import cli
 
 
 __config__ = {
+    "frequency": "1m",
     # 是否开启信号模式
     "signal": False,
     # 启用的回测引擎，目前支持 `current_bar` (当前Bar收盘价撮合) 和 `next_bar` (下一个Bar开盘价撮合)

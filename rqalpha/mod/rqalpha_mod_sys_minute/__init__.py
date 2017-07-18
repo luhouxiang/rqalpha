@@ -16,7 +16,7 @@
 
 import click
 from rqalpha import cli
-
+from rqalpha import run
 
 __config__ = {
     # 是否开启信号模式
@@ -36,7 +36,6 @@ __config__ = {
     # 按照当前成交量的百分比进行撮合
     "volume_percent": 0.25,
 }
-
 
 def load_mod():
     from .mod import MinuteMod

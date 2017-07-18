@@ -18,9 +18,8 @@
 import bcolz
 import numpy as np
 import six
-
-from ..utils.i18n import gettext as _
-from ..utils.datetime_func import convert_date_to_int
+from rqalpha.utils.i18n import gettext as _
+from rqalpha.utils.datetime_func import convert_date_to_int
 
 class MinuteBarStore(object):
     def __init__(self, main, main_index, converter):
