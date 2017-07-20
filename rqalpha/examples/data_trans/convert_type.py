@@ -29,15 +29,13 @@ class Converter(object):
             return dt
 
 float64 = np.dtype('float64')
-class StockBarConverter(object):
-    def __init__(self, ):
-        self._converter = Converter({
-            'open': Rule(float64, 1 / 10000.0, 2),
-            'close': Rule(float64, 1 / 10000.0, 2),
-            'high': Rule(float64, 1 / 10000.0, 2),
-            'low': Rule(float64, 1 / 10000.0, 2),
-            'limit_up': Rule(float64, 1/10000.0, 2),
-            'limit_down': Rule(float64, 1/10000.0, 2),
-            'volume': Rule(float64, 1, 0),
-        })
+StockBarConverter = Converter({
+    'open': Rule(float64, 1 / 10000.0, 2),
+    'close': Rule(float64, 1 / 10000.0, 2),
+    'high': Rule(float64, 1 / 10000.0, 2),
+    'low': Rule(float64, 1 / 10000.0, 2),
+    'limit_up': Rule(float64, 1/10000.0, 2),
+    'limit_down': Rule(float64, 1/10000.0, 2),
+    'volume': Rule(float64, 1, 0),
+})
 
