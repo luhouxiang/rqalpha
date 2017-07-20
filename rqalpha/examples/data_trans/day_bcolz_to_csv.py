@@ -10,7 +10,7 @@ import bcolz
 import numpy as np
 from ..data_trans.convert_type import StockBarConverter
 
-day_path = 'test001.bcolz'
+day_path = 'C:\\Users\\Administrator\\.rqalpha\\bundle\\stocks.bcolz'
 print("打开数据文件：" + day_path)
 _table = bcolz.open(day_path, 'a')
 _index = _table.attrs['line_map']
