@@ -78,6 +78,8 @@ def load_mod_config(config_path, loader=yaml.Loader):
 def get_mod_config_path(generate=False):
     mod_config_path = os.path.abspath(os.path.expanduser(os.path.join(rqalpha_path, "mod_config.yml")))
     mod_template_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../mod_config_template.yml"))
+    # print("mod_config_path: " + mod_config_path)
+    # print("mod_template_path: " + mod_template_path)
     if not os.path.exists(mod_config_path):
         if generate:
             dir_path = os.path.dirname(mod_config_path)
