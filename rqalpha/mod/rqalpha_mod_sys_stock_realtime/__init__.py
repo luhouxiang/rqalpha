@@ -58,9 +58,9 @@ def quotation_server(redis_url):
 
     from rqalpha.data.data_proxy import DataProxy
     from rqalpha.data.base_data_source import BaseDataSource
-    # config = parse_config({}, verify_config=False)
-    # data_source = BaseDataSource(config.base.data_bundle_path)
-    data_source = BaseDataSource("C:\\Users\\Administrator\\.rqalpha\\bundle\\")
+    config = parse_config({}, verify_config=False)
+    data_source = BaseDataSource(config.base.data_bundle_path)
+    # data_source = BaseDataSource(None)
     data_proxy = DataProxy(data_source)
 
     order_book_id_list = sorted(ins.order_book_id for ins in data_proxy.all_instruments("CS"))
