@@ -136,7 +136,8 @@ def set_locale(lc):
     localization.set_locale([lc])
 
 
-def parse_config(config_args, config_path=None, click_type=False, source_code=None, user_funcs=None):
+def parse_config(config_args, config_path=None, click_type=False, source_code=None, user_funcs=None,
+                 verify_config=True):
     mod_configs = config_args.pop("mod_configs", [])
     for cfg, value in mod_configs:
         key = "mod__{}".format(cfg.replace(".", "__"))
@@ -175,7 +176,7 @@ def parse_config(config_args, config_path=None, click_type=False, source_code=No
         deep_update(config_args, config)
 
     # config from user code
-    if user_funcs is None:
+    if user_funcs is None and verify_config:
         config = parse_user_config_from_code(config, source_code)
     config = RqAttrDict(config)
 
@@ -202,10 +203,10 @@ def parse_config(config_args, config_path=None, click_type=False, source_code=No
         system_log.error(
             _(u"data bundle not found in {bundle_path}. Run `rqalpha update_bundle` to download data bundle.").format(
                 bundle_path=base_config.data_bundle_path))
-
-    base_config.run_type = parse_run_type(base_config.run_type)
-    base_config.accounts = parse_accounts(base_config.accounts)
-    base_config.persist_mode = parse_persist_mode(base_config.persist_mode)
+    if verify_config:
+        base_config.run_type = parse_run_type(base_config.run_type)
+        base_config.accounts = parse_accounts(base_config.accounts)
+        base_config.persist_mode = parse_persist_mode(base_config.persist_mode)
 
     if extra_config.context_vars:
         if isinstance(extra_config.context_vars, six.string_types):
