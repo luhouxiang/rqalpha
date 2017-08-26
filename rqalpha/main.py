@@ -48,7 +48,8 @@ from .model.base_position import Positions
 from .utils import create_custom_exception, run_with_user_log_disabled, scheduler as mod_scheduler
 from .utils.exception import CustomException, is_user_exc, patch_user_exc
 from .utils.i18n import gettext as _
-from .utils.logger import user_log, user_system_log, system_log, user_print, user_detail_log, init_logger, user_std_handler
+from .utils.logger import user_log, user_system_log, system_log, user_print, \
+    user_detail_log, init_logger, user_std_handler, user_file_handler
 from .utils.persisit_helper import CoreObjectsPersistProxy, PersistHelper
 from .utils.scheduler import Scheduler
 from .utils.config import set_locale
@@ -361,5 +362,6 @@ def add_log_handlers(config):
     if extra_config.log_level.upper() != "NONE":
         if not extra_config.user_log_disabled:
             user_log.handlers.append(user_std_handler)
+            user_log.handlers.append(user_file_handler)
         if not extra_config.user_system_log_disabled:
             user_system_log.handlers.append(user_std_handler)

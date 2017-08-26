@@ -14,11 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from datetime import datetime
 import traceback
 import logbook
 import better_exceptions
-from logbook import Logger
+from logbook import Logger, TimedRotatingFileHandler
 from logbook.more import ColorizedStderrHandler
 
 from .py2 import to_utf8, from_utf8
@@ -62,9 +63,12 @@ def user_std_handler_log_formatter(record, handler):
     except Exception:
         dt = datetime.now().strftime(DATETIME_FORMAT)
 
-    log = "{dt} {level} {msg}".format(
+    log = "[{dt}][{level}][{filename}:{lineno}][{func_name}] {msg}".format(
         dt=dt,
-        level=record.level_name,
+        level=record.level_name,                      # 日志等级
+        filename=os.path.split(record.filename)[-1],  # 文件名
+        lineno=record.lineno,                         # 行号
+        func_name=record.func_name,                   # 函数名
         msg=to_utf8(record.message),
     )
     return log
@@ -72,6 +76,16 @@ def user_std_handler_log_formatter(record, handler):
 
 user_std_handler = ColorizedStderrHandler(bubble=True)
 user_std_handler.formatter = user_std_handler_log_formatter
+
+# 日志路径，在主工程下生成log目录
+LOG_DIR = os.path.join('log')
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
+# 打印到文件句柄
+user_file_handler = TimedRotatingFileHandler(
+    os.path.join(LOG_DIR , '%s.log' % 'rqalpha'), date_format='%Y%m%d', bubble=True)
+user_file_handler.formatter = user_std_handler_log_formatter
 
 
 def formatter_builder(tag):
