@@ -221,3 +221,13 @@ Feature Status
 .. _tushare: https://github.com/ricequant/rqalpha-mod-tushare
 .. _shipane: https://github.com/wh1100717/rqalpha-mod-ShiPanE
 
+
+```flow
+st=>start: Start
+op=>operation: Your Operation
+cond=>condition: Yes or No?
+e=>end
+st->op->cond
+cond(yes)->e
+cond(no)->op
+ ```
