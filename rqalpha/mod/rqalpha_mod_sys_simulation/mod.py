@@ -16,14 +16,16 @@
 
 import six
 
+from rqalpha.environment import Environment
 from rqalpha.interface import AbstractMod
 from rqalpha.utils.i18n import gettext as _
 from rqalpha.utils.exception import patch_user_exc
 from rqalpha.const import MATCHING_TYPE, RUN_TYPE
+from rqalpha.events import EVENT
 
-from .simulation_broker import SimulationBroker
-from .signal_broker import SignalBroker
-from .simulation_event_source import SimulationEventSource
+from rqalpha.mod.rqalpha_mod_sys_simulation.simulation_broker import SimulationBroker
+from rqalpha.mod.rqalpha_mod_sys_simulation.signal_broker import SignalBroker
+from rqalpha.mod.rqalpha_mod_sys_simulation.simulation_event_source import SimulationEventSource
 
 
 class SimulationMod(AbstractMod):
@@ -36,8 +38,7 @@ class SimulationMod(AbstractMod):
             return
 
         mod_config.matching_type = self.parse_matching_type(mod_config.matching_type)
-        if mod_config.commission_multiplier < 0:
-            raise patch_user_exc(ValueError(_(u"invalid commission multiplier value: value range is [0, +∞)")))
+
         if env.config.base.margin_multiplier <= 0:
             raise patch_user_exc(ValueError(_(u"invalid margin multiplier value: value range is (0, +∞]")))
 
@@ -63,6 +64,13 @@ class SimulationMod(AbstractMod):
 
         event_source = SimulationEventSource(env)
         env.set_event_source(event_source)
+        env.event_bus.add_listener(EVENT.BEFORE_SYSTEM_RESTORED, self._before_system_restore)
+
+    @staticmethod
+    def _before_system_restore(_):
+        env = Environment.get_instance()
+        if env.config.base.run_type == RUN_TYPE.PAPER_TRADING and env.booking:
+            env.persist_helper.register('booking', env.booking)
 
     def tear_down(self, code, exception=None):
         pass

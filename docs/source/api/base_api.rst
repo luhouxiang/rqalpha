@@ -94,12 +94,17 @@ after_trading
 ..  module:: rqalpha.api
     :synopsis: API
 
-🆕 order - 智能下单「通用」
+🆕 submit_order - 自由参数下单「通用」
+------------------------------------------------------
+
+.. autofunction:: submit_order
+
+order - 智能下单「通用」
 ------------------------------------------------------
 
 .. autofunction:: order
 
-🆕 order_to - 智能下单「通用」
+order_to - 智能下单「通用」
 ------------------------------------------------------
 
 .. autofunction:: order_to
@@ -262,7 +267,7 @@ scheduler.run_monthly - 每月运行
 
     :example:
 
-    以下的代码片段非常简单的展示了每个月第一个交易日的时候我们进行一次财务数据查询，这样子会非常有用在一些根据财务数据来自动调节仓位股票组合的算法来说:
+    以下的代码片段非常简单的展示了每个月第一个交易日的时候我们进行一次财务数据查询，这对根据财务数据来调节股票组合的策略会非常有用:
 
     ..  code-block:: python3
         :linenos:
@@ -801,13 +806,19 @@ Instrument对象也支持如下方法：
 
 如果合约首次上市交易，天数为0；如果合约尚未上市或已经退市，则天数值为-1
 
-合约距离到期天数。:
+合约距离到期天数：
 
     ..  code-block:: python
 
         instruments(order_book_id).days_to_expire()
 
 如果策略已经退市，则天数值为-1
+
+最小价格变动单位：
+
+    .. code-block:: python
+
+        instruments(order_book_id).tick_size()
 
 枚举常量
 ======================================================

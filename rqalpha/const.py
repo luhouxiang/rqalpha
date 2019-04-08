@@ -54,13 +54,14 @@ class DEFAULT_ACCOUNT_TYPE(CustomEnum):
     *   目前暂时不添加其他 DEFAULT_ACCOUNT_TYPE 类型，如果需要增加自定义账户及类型，请参考 https://github.com/ricequant/rqalpha/issues/160
     """
     TOTAL = 0
-    BENCHMARK = 1
     # 股票
     STOCK = 2
     # 期货
     FUTURE = 3
     # 期权
     OPTION = 4
+    # 债券
+    BOND = 5
 
 
 # noinspection PyPep8Naming
@@ -110,6 +111,13 @@ class POSITION_EFFECT(CustomEnum):
 
 
 # noinspection PyPep8Naming
+class POSITION_DIRECTION(CustomEnum):
+    UNKNOWN = "UNKNOWN"
+    LONG = "LONG"
+    SHORT = "SHORT"
+
+
+# noinspection PyPep8Naming
 class EXC_TYPE(CustomEnum):
     USER_EXC = "USER_EXC"
     SYSTEM_EXC = "SYSTEM_EXC"
@@ -128,6 +136,7 @@ class INSTRUMENT_TYPE(CustomEnum):
     FENJI_A = "FENJI_A"
     FENJI_B = "FENJI_B"
     PUBLIC_FUND = 'PublicFund'
+    BOND = "Bond"
 
 
 # noinspection PyPep8Naming
@@ -169,6 +178,12 @@ class DAYS_CNT(object):
     TRADING_DAYS_A_YEAR = 252
 
 
+# noinspection PyPep89Naming
+class MARKET(CustomEnum):
+    CN = "CN"
+    HK = "HK"
+
+
 class CURRENCY(CustomEnum):
     CNY = "CNY"     # 人民币
     USD = "USD"     # 美元
@@ -192,4 +207,4 @@ class CURRENCY(CustomEnum):
 UNDERLYING_SYMBOL_PATTERN = "([a-zA-Z]+)\d+"
 
 NIGHT_TRADING_NS = ["CU", "AL", "ZN", "PB", "SN", "NI", "RB", "HC", "BU", "RU", "AU", "AG", "Y", "M", "A", "B", "P",
-                    "J", "JM", "I", "CF", "SR", "OI", "MA", "ZC", "FG", "RM", "CY", "TA"]
+                    "J", "JM", "I", "CF", "SR", "OI", "MA", "ZC", "FG", "RM", "CY", "TA", "SC", "SP"]
