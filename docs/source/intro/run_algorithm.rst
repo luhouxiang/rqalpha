@@ -40,7 +40,7 @@
 -fq           `- -` frequency                 目前支持 :code:`1d` (日线回测) 和 :code:`1m` (分钟线回测)，如果要进行分钟线，请注意是否拥有对应的数据源，目前开源版本是不提供对应的数据源的
 -rt           `- -` run-type                  运行类型，:code:`b` 为回测，:code:`p` 为模拟交易, :code:`r` 为实盘交易
 N/A           `- -` resume                    在模拟交易和实盘交易中，RQAlpha支持策略的pause && resume，该选项表示开启 resume 功能
--l            `- -` log-level                 选择日期的输出等级，有 :code:`verbose` | code:`info` | :code:`warning` | :code:`error` 等选项，您可以通过设置 :code:`verbose` 来查看最详细的日志，或者设置 :code:`error` 只查看错误级别的日志输出
+-l            `- -` log-level                 选择日志的输出等级，有 :code:`verbose` | code:`info` | :code:`warning` | :code:`error` 等选项，您可以通过设置 :code:`verbose` 来查看最详细的日志，或者设置 :code:`error` 只查看错误级别的日志输出
 N/A           `- -` locale                    选择语言， 支持 :code:`en` | :code:`cn`
 N/A           `- -` disable-user-system-log   关闭用户策略产生的系统日志(比如订单未成交等提示)
 N/A           `- -` enable-profiler           启动策略逐行性能分析，启动后，在回测结束，会打印策略的运行性能分析报告，可以看到每一行消耗的时间
@@ -180,7 +180,7 @@ RQAlpha 在运行策略时候会在当前目录下寻找 `config.yml` 或者  `c
 
 .. code-block:: bash
 
-    $ rqalpha generate_config
+    $ rqalpha generate-config
 
 ::
 
@@ -210,8 +210,6 @@ RQAlpha 在运行策略时候会在当前目录下寻找 `config.yml` 或者  `c
       frequency: 1d
       # Benchmark，如果不设置，默认没有基准参照。
       benchmark: ~
-      # 在模拟交易和实盘交易中，RQAlpha支持策略的pause && resume，该选项表示开启 resume 功能
-      resume_mode: false
       # 在模拟交易和实盘交易中，RQAlpha支持策略的pause && resume，该选项表示开启 persist 功能呢，
       # 其会在每个bar结束对进行策略的持仓、账户信息，用户的代码上线文等内容进行持久化
       persist: false
@@ -223,14 +221,12 @@ RQAlpha 在运行策略时候会在当前目录下寻找 `config.yml` 或者  `c
         future: ~
 
     extra:
-      # 选择日期的输出等级，有 `verbose` | `info` | `warning` | `error` 等选项，您可以通过设置 `verbose` 来查看最详细的日志，
+      # 选择日志的输出等级，有 `verbose` | `info` | `warning` | `error` 等选项，您可以通过设置 `verbose` 来查看最详细的日志，
       # 或者设置 `error` 只查看错误级别的日志输出
       log_level: info
       user_system_log_disabled: false
       # 通过该参数可以将预定义变量传入 `context` 内。
       context_vars: ~
-      # force_run_init_when_pt_resume: 在PT的resume模式时，是否强制执行用户init。主要用于用户改代码。
-      force_run_init_when_pt_resume: false
       # enable_profiler: 是否启动性能分析
       enable_profiler: false
       is_hold: false
@@ -342,7 +338,7 @@ RQAlpha 会自动识别策略中的 :code:`__config__` 变量。
 此种模式下，您需要以字符串的方式传入策略源码，并传入配置参数以启动策略
 
 .. code-block:: python
-    
+
     # run_code_demo
     from rqalpha import run_code
 
@@ -372,7 +368,7 @@ RQAlpha 会自动识别策略中的 :code:`__config__` 变量。
       "base": {
         "start_date": "2016-06-01",
         "end_date": "2016-12-01",
-        "benchmark": "000300.XSHG"，
+        "benchmark": "000300.XSHG",
         "accounts": {
             "stock": 100000
         }

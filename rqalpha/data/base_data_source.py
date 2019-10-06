@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2017 Ricequant, Inc
+# Copyright 2019 Ricequant, Inc
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# * Commercial Usage: please contact public@ricequant.com
+# * Non-Commercial Usage:
+#     Licensed under the Apache License, Version 2.0 (the "License");
+#     you may not use this file except in compliance with the License.
+#     You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#         http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#     Unless required by applicable law or agreed to in writing, software
+#     distributed under the License is distributed on an "AS IS" BASIS,
+#     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#     See the License for the specific language governing permissions and
+#     limitations under the License.
 
 import os
 import six
@@ -27,6 +29,7 @@ from rqalpha.utils.i18n import gettext as _
 from rqalpha.data.future_info_cn import CN_FUTURE_INFO
 from rqalpha.data.converter import StockBarConverter, IndexBarConverter
 from rqalpha.data.converter import FutureDayBarConverter, FundDayBarConverter, PublicFundDayBarConverter
+
 from rqalpha.data.daybar_store import DayBarStore
 from rqalpha.data.date_set import DateSet
 from rqalpha.data.dividend_store import DividendStore
@@ -34,6 +37,7 @@ from rqalpha.data.instrument_store import InstrumentStore
 from rqalpha.data.trading_dates_store import TradingDatesStore
 from rqalpha.data.yield_curve_store import YieldCurveStore
 from rqalpha.data.simple_factor_store import SimpleFactorStore
+from rqalpha.data.share_transformation_store import ShareTransformationStore
 from rqalpha.data.adjust import adjust_bars, FIELDS_REQUIRE_ADJUSTMENT
 from rqalpha.data.public_fund_commission import PUBLIC_FUND_COMMISSION
 
@@ -41,7 +45,7 @@ from rqalpha.data.public_fund_commission import PUBLIC_FUND_COMMISSION
 class BaseDataSource(AbstractDataSource):
     def __init__(self, path):
         if not os.path.exists(path):
-            raise RuntimeError('bundle path {} not exist'.format(os.path.abspath))
+            raise RuntimeError('bundle path {} not exist'.format(os.path.abspath(path)))
 
         def _p(name):
             return os.path.join(path, name)
@@ -59,6 +63,7 @@ class BaseDataSource(AbstractDataSource):
         self._yield_curve = YieldCurveStore(_p('yield_curve.bcolz'))
         self._split_factor = SimpleFactorStore(_p('split_factor.bcolz'))
         self._ex_cum_factor = SimpleFactorStore(_p('ex_cum_factor.bcolz'))
+        self._share_transformation = ShareTransformationStore(_p('share_transformation.json'))
 
         self._st_stock_days = DateSet(_p('st_stock_days.bcolz'))
         self._suspend_days = DateSet(_p('suspended_days.bcolz'))
@@ -84,6 +89,9 @@ class BaseDataSource(AbstractDataSource):
 
     def get_all_instruments(self):
         return self._instruments.get_all_instruments()
+
+    def get_share_transformation(self, order_book_id):
+        return self._share_transformation.get_share_transformation(order_book_id)
 
     def is_suspended(self, order_book_id, dates):
         return self._suspend_days.contains(order_book_id, dates)
@@ -197,17 +205,8 @@ class BaseDataSource(AbstractDataSource):
             s, e = self._day_bars[self.INSTRUMENT_TYPE_MAP['INDX']].get_date_range('000001.XSHG')
             return convert_int_to_date(s).date(), convert_int_to_date(e).date()
 
-        raise NotImplementedError
-
-    def get_margin_info(self, instrument):
-        return {
-            'margin_type': MARGIN_TYPE.BY_MONEY,
-            'long_margin_ratio': instrument.margin_rate,
-            'short_margin_ratio': instrument.margin_rate,
-        }
-
     def get_commission_info(self, instrument):
-        return CN_FUTURE_INFO[instrument.underlying_symbol]['speculation']
+        return CN_FUTURE_INFO[instrument.underlying_symbol]
 
     def get_ticks(self, order_book_id, date):
         raise NotImplementedError
@@ -223,3 +222,16 @@ class BaseDataSource(AbstractDataSource):
 
     def non_redeemable(self, order_book_id, dates):
         return self._non_redeemable_days.contains(order_book_id, dates)
+
+    def get_tick_size(self, instrument):
+        if instrument.type == 'CS':
+                return 0.01
+        elif instrument.type == "INDX":
+            return 0.01
+        elif instrument.type in ['ETF', 'LOF', 'FenjiB', 'FenjiA', 'FenjiMu']:
+            return 0.001
+        elif instrument.type == 'Future':
+            return CN_FUTURE_INFO[instrument.underlying_symbol]['tick_size']
+        else:
+            # NOTE: you can override get_tick_size in your custom data source
+            raise RuntimeError(_("Unsupported instrument type for tick size"))

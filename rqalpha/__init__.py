@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2017 Ricequant, Inc
+# Copyright 2019 Ricequant, Inc
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# * Commercial Usage: please contact public@ricequant.com
+# * Non-Commercial Usage:
+#     Licensed under the Apache License, Version 2.0 (the "License");
+#     you may not use this file except in compliance with the License.
+#     You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#         http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#     Unless required by applicable law or agreed to in writing, software
+#     distributed under the License is distributed on an "AS IS" BASIS,
+#     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#     See the License for the specific language governing permissions and
+#     limitations under the License.
 
 """
 RQAlpha - a Algorithm Trading System
@@ -21,7 +23,7 @@ RQAlpha - a Algorithm Trading System
 import pkgutil
 
 from rqalpha.__main__ import cli
-from rqalpha.api.api_base import export_as_api
+from rqalpha.api.api_base import export_as_api, subscribe_event
 
 __all__ = [
     '__version__',
@@ -47,8 +49,8 @@ def load_ipython_extension(ipython):
 
 
 def update_bundle(data_bundle_path=None, locale="zh_Hans_CN", confirm=True):
-    from rqalpha import main
-    main.update_bundle(data_bundle_path=data_bundle_path, locale=locale, confirm=confirm)
+    import rqalpha.utils.bundle_helper
+    rqalpha.utils.bundle_helper.update_bundle(data_bundle_path=data_bundle_path, locale=locale, confirm=confirm)
 
 
 def run(config, source_code=None):
@@ -141,15 +143,3 @@ def run_func(**kwargs):
     config = parse_config(config, user_funcs=user_funcs)
     clear_all_cached_functions()
     return main.run(config, user_funcs=user_funcs)
-
-
-def subscribe_event(event_type, handler):
-    import types
-    from rqalpha.events import EVENT
-    from rqalpha.environment import Environment
-
-    assert isinstance(handler, types.FunctionType)
-    assert isinstance(event_type, EVENT)
-
-    env = Environment.get_instance()
-    env.event_bus.add_listener(event_type, handler)

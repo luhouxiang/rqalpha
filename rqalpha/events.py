@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2017 Ricequant, Inc
+# Copyright 2019 Ricequant, Inc
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# * Commercial Usage: please contact public@ricequant.com
+# * Non-Commercial Usage:
+#     Licensed under the Apache License, Version 2.0 (the "License");
+#     you may not use this file except in compliance with the License.
+#     You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#         http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#     Unless required by applicable law or agreed to in writing, software
+#     distributed under the License is distributed on an "AS IS" BASIS,
+#     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#     See the License for the specific language governing permissions and
+#     limitations under the License.
 
 from enum import Enum
 from collections import defaultdict
@@ -30,18 +32,22 @@ class Event(object):
 class EventBus(object):
     def __init__(self):
         self._listeners = defaultdict(list)
+        self._user_listeners = defaultdict(list)
 
-    def add_listener(self, event, listener):
-        self._listeners[event].append(listener)
+    def add_listener(self, event_type, listener, user=False):
+        (self._user_listeners if user else self._listeners)[event_type].append(listener)
 
-    def prepend_listener(self, event, listener):
-        self._listeners[event].insert(0, listener)
+    def prepend_listener(self, event_type, listener, user=False):
+        (self._user_listeners if user else self._listeners)[event_type].insert(0, listener)
 
     def publish_event(self, event):
-        for l in self._listeners[event.event_type]:
+        for listener in self._listeners[event.event_type]:
             # 如果返回 True ，那么消息不再传递下去
-            if l(event):
+            if listener(event):
                 break
+
+        for listener in self._user_listeners[event.event_type]:
+            listener(event)
 
 
 class EVENT(Enum):
@@ -50,6 +56,7 @@ class EVENT(Enum):
     POST_SYSTEM_INIT = 'post_system_init'
 
     # 在实盘时，你可能需要在此事件后根据其他信息源对系统状态进行调整
+    BEFORE_SYSTEM_RESTORED = 'before_system_restored'
     POST_SYSTEM_RESTORED = 'post_system_restored'
 
     # 策略执行完init函数后触发
@@ -140,14 +147,22 @@ class EVENT(Enum):
 
     ON_LINE_PROFILER_RESULT = 'on_line_profiler_result'
 
-    # persist immediantly
+    # persist immediately
     DO_PERSIST = 'do_persist'
+    # reload immediately
+    DO_RESTORE = "do_restore"
 
     # 策略被暂停
     STRATEGY_HOLD_SET = 'strategy_hold_set'
     # 策略被恢复
     STRATEGY_HOLD_CANCELLED = 'strategy_hold_canceled'
 
+    # 心跳事件，用于触发定时任务
+    HEARTBEAT = 'heartbeat'
+
+    # 用户事件，接受用户发送的信息
+    USER = 'user'
+
 
 def parse_event(event_str):
-    return EVENT.__members__.get(event_str.upper(), None)
+    return EVENT[event_str.upper()]
