@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from datetime import datetime
 import logbook
 from logbook import Logger, StderrHandler
@@ -44,9 +45,11 @@ def user_std_handler_log_formatter(record, handler):
     except Exception:
         dt = datetime.now().strftime(DATETIME_FORMAT)
 
-    log = "{dt} {level} {msg}".format(
+    log = "[{dt}][{level}][{filename}][{lineno}]: {msg}".format(
         dt=dt,
         level=record.level_name,
+        filename=os.path.split(record.filename)[-1],
+        lineno=record.lineno,
         msg=to_utf8(record.message),
     )
     return log
@@ -91,11 +94,11 @@ std_log = Logger("std_log")
 
 
 def init_logger():
-    system_log.handlers = [StderrHandler(bubble=True)]
-    basic_system_log.handlers = [StderrHandler(bubble=True)]
-    std_log.handlers = [StderrHandler(bubble=True)]
-    user_log.handlers = []
-    user_system_log.handlers = []
+    system_log.handlers = [user_std_handler]
+    basic_system_log.handlers = [user_std_handler]
+    std_log.handlers = [user_std_handler]
+    user_log.handlers = [user_std_handler]
+    user_system_log.handlers = [user_std_handler]
 
 
 def user_print(*args, **kwargs):
